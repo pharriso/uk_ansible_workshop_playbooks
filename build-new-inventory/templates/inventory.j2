@@ -1,0 +1,23 @@
+[all:vars]
+ansible_user={{ ansible_user }}
+ansible_ssh_pass={{ ansible_ssh_pass }}
+ansible_port=22
+
+[loadbalancer]
+{% for server in groups['web'] %}
+{% if hostvars[server].inventory_hostname == "node1" %}
+{{ hostvars[server].inventory_hostname }} ansible_host={{ hostvars[server].ansible_host }}
+{% endif %}
+{% endfor %}
+
+[web]
+{% for server in groups['web'] %}
+{% if hostvars[server].inventory_hostname != "node1" %}
+{{ hostvars[server].inventory_hostname }} ansible_host={{ hostvars[server].ansible_host }}
+{% endif %}
+{% endfor %}
+
+[control]
+{% for server in groups['control'] %}
+{{ hostvars[server].inventory_hostname }} ansible_host={{ hostvars[server].ansible_host }}
+{% endfor %}

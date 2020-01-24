@@ -1,0 +1,36 @@
+---
+- name: Configure HAProxy loadbalancer
+  hosts: loadbalancer
+  become: yes
+
+  tasks:
+
+  - name: Ensure httpd is stopped
+    service:
+      name: httpd
+      state: stopped
+      enabled: false    
+
+  - name: Install haproxy 
+    yum: 
+      name: haproxy 
+      state: present
+
+  - name: Start haproxy service
+    service: 
+      name: haproxy 
+      state: started 
+      enabled: yes
+
+  - name: Configure haproxy content
+    template: 
+      dest: /etc/haproxy/haproxy.cfg 
+      src: haproxy.cfg.j2
+    notify:
+      - restart haproxy
+
+  handlers:
+    - name: restart haproxy
+      service: 
+        name: haproxy
+        state: restarted

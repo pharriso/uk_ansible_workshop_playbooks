@@ -1,0 +1,14 @@
+---
+
+- name: update lab inventory
+  hosts: all
+  connection: local
+  become: yes
+
+  tasks:
+
+  - name: Template out new inventory
+    template:
+      src: inventory.j2
+      dest: /tmp/inventory
+    run_once: true

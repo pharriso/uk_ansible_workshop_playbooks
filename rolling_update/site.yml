@@ -1,0 +1,35 @@
+---
+- name: perform rolling maintenance of web servers
+  hosts: web
+  become: yes
+  serial: 1
+
+  tasks:
+
+  - name: update kernel
+    yum:
+      name: kernel
+      state: latest
+    register: kernel_patch
+
+  - name: remove server from loadbalancer pool
+    haproxy:
+      state: disabled
+      socket: /var/lib/haproxy/stats
+      host: "{{ ansible_host }}"
+      backend: http
+    delegate_to: "{{ groups.loadbalancer | first }}"
+    when: kernel_patch is changed
+
+  - name: reboot server
+    reboot:
+    when: kernel_patch is changed
+
+  - name: add server to loadbalancer pool
+    haproxy:
+      state: enabled
+      socket: /var/lib/haproxy/stats
+      host: "{{ ansible_host }}"
+      backend: http
+    delegate_to: "{{ groups.loadbalancer | first }}"
+
